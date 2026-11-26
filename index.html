@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رژیم‌یار</title>
+<style>
+:root{--bg:#f1f5ef;--card:#fff;--ink:#14322a;--mut:#5d7469;--ac:#e39a2d;--ac2:#b8365a;--ln:#d5dfd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10201b;--card:#182b25;--ink:#e8f1ec;--mut:#92aa9f;--ac:#f0b04e;--ac2:#ee7a97;--ln:#2a423a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10201b;--card:#182b25;--ink:#e8f1ec;--mut:#92aa9f;--ac:#f0b04e;--ac2:#ee7a97;--ln:#2a423a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Noto Sans Arabic","Samsung Sans",sans-serif;line-height:1.8;max-width:640px;margin-inline:auto;padding:16px 14px 90px}
+h1{font-size:26px;font-weight:800;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:14px;margin:0 0 14px}
+nav{position:fixed;bottom:0;inset-inline:0;max-width:640px;margin-inline:auto;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--mut);font:inherit;font-size:13px;padding:10px 2px;cursor:pointer}
+nav button.on{color:var(--ink);font-weight:800;box-shadow:inset 0 3px 0 var(--ac)}
+section{display:none}section.on{display:block}
+.box{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+input,select{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink)}
+label{font-size:13px;color:var(--mut)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.food b{font-size:16px}
+.nums{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.nums span b{color:var(--ink)}
+.walk{margin-top:6px;font-size:14px;color:var(--ac2);font-weight:600}
+.big{font-size:34px;font-weight:800}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;width:100%}
+ul{list-style:none;margin:6px 0 0;padding:0}
+li label{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:15px;padding:5px 0;border-top:1px solid var(--ln)}
+li input{width:20px;height:20px;accent-color:var(--ac)}
+.note{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<h1>رژیم‌یار</h1>
+<p class="sub">غذا، تردمیل، باشگاه و اطلاعات بدنی در یک جا</p>
+
+<section id="foods" class="on">
+  <input id="q" placeholder="جستجوی غذا…" oninput="renderFoods()">
+  <div class="row" style="margin-top:10px">
+    <div><label>سرعت تردمیل</label><select id="spd" onchange="renderFoods()"><option value="2.8">۴ کیلومتر/ساعت</option><option value="3.5" selected>۵ کیلومتر/ساعت</option><option value="4.3">۶ کیلومتر/ساعت</option><option value="5">۷ کیلومتر/ساعت</option></select></div>
+    <div><label>وزن شما (کیلو)</label><input id="wt2" type="number" inputmode="decimal" oninput="syncW(this.value)"></div>
+  </div>
+  <div id="list"></div>
+  <p class="note">ارقام تقریبی و بر پایه‌ی پایگاه USDA FoodData Central برای مقدار نوشته‌شده‌ی هر غذا هستند. زمان تردمیل با فرمول MET محاسبه می‌شود.</p>
+</section>
+
+<section id="gym">
+  <div class="box"><label>برنامه‌ی امروز</label>
+    <select id="day" onchange="renderGym()"></select></div>
+  <div class="box"><ul id="ex"></ul></div>
+  <button class="btn" onclick="resetGym()">پاک کردن تیک‌ها</button>
+</section>
+
+<section id="me">
+  <div class="row">
+    <div><label>وزن (کیلو)</label><input id="w" type="number" inputmode="decimal" oninput="calc()"></div>
+    <div><label>قد (سانتی‌متر)</label><input id="h" type="number" inputmode="decimal" oninput="calc()"></div>
+    <div><label>سن</label><input id="a" type="number" inputmode="numeric" oninput="calc()"></div>
+    <div><label>جنسیت</label><select id="s" onchange="calc()"><option value="1">مرد</option><option value="0">زن</option></select></div>
+  </div>
+  <div class="box"><label>شاخص توده بدنی (BMI)</label><div class="big" id="bmi">—</div><div id="cat" class="sub"></div></div>
+  <div class="box"><label>درصد چربی بدن (تخمینی)</label><div class="big" id="bf">—</div></div>
+  <div class="box"><label>حد اضافه‌وزن</label><div id="lim" style="font-weight:600">—</div><div class="note">وزن سالم: BMI بین ۱۸٫۵ و ۲۴٫۹. اضافه‌وزن از BMI ۲۵ شروع می‌شود.</div></div>
+</section>
+
+<nav>
+  <button class="on" onclick="tab('foods',this)">غذاها</button>
+  <button onclick="tab('gym',this)">باشگاه</button>
+  <button onclick="tab('me',this)">اطلاعات من</button>
+</nav>
+
+<script>
+var F=[["خرما (۱ عدد مجول، ۲۴ گرم)",66,16,0.4,0.04],["سیب (متوسط، ۱۸۲ گرم)",95,19,0.5,0.3],["موز (متوسط، ۱۱۸ گرم)",105,14,1.3,0.4],["پرتقال (متوسط، ۱۳۱ گرم)",62,12,1.2,0.2],["برنج پخته (۱ پیمانه، ۱۵۸ گرم)",205,0.1,4.2,0.4],["تخم‌مرغ (۱ عدد بزرگ)",72,0.2,6.3,4.8],["سینه مرغ پخته (۱۰۰ گرم)",165,0,31,3.6],["ماست کامل ساده (۱ پیمانه)",149,11,8.5,8],["عدس پخته (۱ پیمانه)",230,3.6,18,0.8],["بادام (۲۸ گرم)",164,1.2,6,14],["سیب‌زمینی سرخ‌کرده (۱۰۰ گرم)",312,0.3,3.4,15],["شکلات شیری (۴۳ گرم)",226,24,3,13],["نوشابه (۳۵۵ میلی‌لیتر)",140,39,0,0]];
+var G={"سینه و سه‌سر":["پرس سینه هالتر ۴×۱۰","پرس سینه بالا دمبل ۳×۱۲","نشر از جلو ۳×۱۲","پشت بازو سیم‌کش ۳×۱۲"],"پشت و دوسر":["لت پول‌داون ۴×۱۰","روئینگ نشسته ۳×۱۲","جلو بازو هالتر ۳×۱۰","جلو بازو چکشی ۳×۱۲"],"پا":["اسکوات ۴×۱۰","پرس پا ۳×۱۲","جلو پا دستگاه ۳×۱۵","ساق پا ایستاده ۴×۱۵"],"شانه و شکم":["پرس سرشانه دمبل ۴×۱۰","نشر از جانب ۳×۱۵","شنا سوئدی ۳ ست تا ناتوانی","پلانک ۳×۴۵ ثانیه"]};
+var done={},prof={};
+try{prof=JSON.parse(localStorage.getItem("rj_p")||"{}");done=JSON.parse(localStorage.getItem("rj_g")||"{}")}catch(e){}
+function save(){try{localStorage.setItem("rj_p",JSON.stringify(prof));localStorage.setItem("rj_g",JSON.stringify(done))}catch(e){}}
+function fa(n,d){return Number(n).toLocaleString("fa-IR",{maximumFractionDigits:d==null?1:d})}
+function tab(id,b){document.querySelectorAll("section").forEach(function(s){s.classList.toggle("on",s.id==id)});document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x==b)})}
+function wt(){return parseFloat(prof.w)||75}
+function syncW(v){prof.w=v;document.getElementById("w").value=v;save();renderFoods();calc()}
+function renderFoods(){
+  var q=document.getElementById("q").value.trim(),met=parseFloat(document.getElementById("spd").value),kpm=met*3.5*wt()/200,h="";
+  F.forEach(function(f){
+    if(q&&f[0].indexOf(q)<0)return;
+    h+='<div class="box food"><b>'+f[0]+'</b><div class="nums"><span>کالری <b>'+fa(f[1],0)+'</b></span><span>قند <b>'+fa(f[2])+'</b> گرم</span><span>پروتئین <b>'+fa(f[3])+'</b> گرم</span><span>چربی <b>'+fa(f[4])+'</b> گرم</span></div><div class="walk">معادل '+fa(f[1]/kpm,0)+' دقیقه پیاده‌روی روی تردمیل</div></div>'});
+  document.getElementById("list").innerHTML=h||'<p class="note">غذایی پیدا نشد. عبارت دیگری را امتحان کنید.</p>'}
+function renderGym(){
+  var d=document.getElementById("day").value,h="";
+  G[d].forEach(function(e,i){var k=d+i;h+='<li><label><input type="checkbox" '+(done[k]?"checked":"")+' onchange="done[\''+k+'\']=this.checked;save()">'+e+'</label></li>'});
+  document.getElementById("ex").innerHTML=h}
+function resetGym(){done={};save();renderGym()}
+function calc(){
+  var w=parseFloat(document.getElementById("w").value),h=parseFloat(document.getElementById("h").value),a=parseFloat(document.getElementById("a").value),s=parseInt(document.getElementById("s").value);
+  prof={w:isNaN(w)?"":w,h:isNaN(h)?"":h,a:isNaN(a)?"":a,s:s};save();
+  if(!w||!h){["bmi","bf"].forEach(function(i){document.getElementById(i).textContent="—"});document.getElementById("cat").textContent="";document.getElementById("lim").textContent="—";return}
+  var m=h/100,b=w/(m*m);
+  document.getElementById("bmi").textContent=fa(b);
+  document.getElementById("cat").textContent=b<18.5?"کم‌وزن":b<25?"وزن سالم":b<30?"اضافه‌وزن":"چاقی";
+  document.getElementById("bf").textContent=a?fa(Math.max(1.2*b+0.23*a-10.8*s-5.4,2))+"٪":"سن را وارد کنید";
+  var lim=25*m*m,diff=w-lim;
+  document.getElementById("lim").textContent="حد اضافه‌وزن شما "+fa(lim)+" کیلوگرم است. "+(diff>0?fa(diff)+" کیلو بالاتر از آن هستید.":"شما "+fa(-diff)+" کیلو پایین‌تر از آن هستید.");
+  var w2=document.getElementById("wt2");if(document.activeElement!=w2)w2.value=w;renderFoods()}
+Object.keys(G).forEach(function(k){var o=document.createElement("option");o.textContent=k;document.getElementById("day").appendChild(o)});
+["w","h","a"].forEach(function(i){document.getElementById(i).value=prof[i]||""});
+document.getElementById("wt2").value=prof.w||"";
+if(prof.s!=null)document.getElementById("s").value=prof.s;
+renderGym();renderFoods();calc();
+</script>
+</body>
+</html>
